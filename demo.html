@@ -1,0 +1,87 @@
+<html>
+<script type="text/javascript" src="js/node.js"></script>
+<script type="text/javascript" src="js/astar.js"></script>
+<script type="text/javascript" src="js/map.js"></script>
+<script type="text/javascript" src="js/tile.js"></script>
+<body>
+    <div id="select" align="center">
+        Start:<select id="sels"></select><br/><br/>
+        End:<select id="sele"></select><br/><br/>
+        <input type="button" value="search" onclick="buttonClick()"/>
+    </div>
+    <div id="tiles"></div>
+    <div id="path"></div>
+</body>
+
+<script type="text/javascript">
+    var screenWidth=document.body.clientWidth;
+    var screenHeight=document.body.clientHeight;
+    var tileDiv=document.getElementById("tiles");
+    var pathDiv=document.getElementById("path");
+    var tileImg="img/brick.gif";
+    var pathImg="img/brick_pass.gif";
+    var pathList=new Array();
+
+    var sels=document.getElementById("sels");
+    var sele=document.getElementById("sele");
+
+    initSel();
+    initTiles(screenWidth,screenHeight,map);
+    if(!window.ActiveXObject)
+        drawTiles(tileDiv,tileImg);
+
+    initMap();
+    setInterval("drawPath()",500);
+
+    function initSel() {
+        var html="";
+        for(i=0;i<map.length;i++) {
+            for(j=0;j<map[0].length;j++) {
+                if(map[i][j]==0) {
+                    var pv=map[0].length*i+j;
+                    var options = document.createElement("option");
+                    options.value=pv;
+                    options.innerHTML="("+j+","+i+")";
+                    sels.appendChild(options);
+
+                    var optione = document.createElement("option");
+                    optione.value=pv;
+                    optione.innerHTML="("+j+","+i+")";
+                    sele.appendChild(optione);
+                }
+            }
+        }
+    }
+
+    function selToNode(sel) {
+        var j=sel%map[0].length;
+        var i=parseInt(sel/map[0].length);
+        var node=new Node(i,j,null);
+        return node;
+    }
+
+    function buttonClick() {
+        pathDiv.innerHTML="";
+        var start=selToNode(sels.options[sels.selectedIndex].value);
+        var end=selToNode(sele.options[sele.selectedIndex].value);
+        var pathfind=new Astar(map);
+        pathList=pathfind.searchList(start,end);
+    }
+
+    function drawPath() {
+        var left=screenWidth/2-(map[0].length/2)*TILE_WIDTH;
+        var top=screenHeight/2-(map.length/2)*TILE_HEIGHT;
+        var sx=left+TILE_WIDTH/2;
+        var sy=top+TILE_HEIGHT/2;
+
+        if(pathList.length>0) {
+            var node=pathList[0];
+            var tile=new Tile(
+                sx+node.getY()*TILE_WIDTH,sy+node.getX()*TILE_HEIGHT);
+            tile.draw(pathDiv,pathImg);
+            pathList.splice(pathList[0],1);
+        }
+    }
+
+</script>
+</html>
